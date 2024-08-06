@@ -9,6 +9,7 @@ import axiosInstance from "../utils/axiosInstance";
 import Toast from "../components/Toast";
 import EmptyCard from "../components/EmptyCard";
 import add from "../assets/add.png";
+import nos from "../assets/nos.png";
 
 const Home = () => {
   const [openAddEditModal, setOpenAddEditModal] = useState({
@@ -42,6 +43,10 @@ const Home = () => {
   const [userInfo, setUserInfo] = useState([]);
   // all note
   const [allNotes, setAllNotes] = useState([]);
+
+  // search
+
+  const [isSearch, setIsSearch] = useState(false);
 
   // navigation
   const navigate = useNavigate();
@@ -97,6 +102,25 @@ const Home = () => {
     }
   };
 
+  // Search for A Note
+  const onSearchNote = async (query) => {
+    try {
+      const response = await axiosInstance.get("/search-notes", {
+        params: { query },
+      });
+      if (response.data && response.data.notes) {
+        setIsSearch(true);
+        setAllNotes(response.data.notes);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  // Clear Search
+  const handleClearSearch = () => {
+    setIsSearch(false);
+    getAllNotes();
+  };
   useEffect(() => {
     getAllNotes();
     getUserInfo();
@@ -104,7 +128,11 @@ const Home = () => {
 
   return (
     <>
-      <Navbar userInfo={userInfo} />
+      <Navbar
+        userInfo={userInfo}
+        onSearchNote={onSearchNote}
+        handleClearSearch={handleClearSearch}
+      />
 
       <div className="container mx-auto">
         {allNotes && allNotes.length > 0 ? (
@@ -129,8 +157,12 @@ const Home = () => {
           </div>
         ) : (
           <EmptyCard
-            imgSrc={add}
-            message={`Start creating your first Note! Click the 'Add' button to jump thoughts, ideas, and reminders. Let's get Start`}
+            imgSrc={isSearch ? nos : add}
+            message={
+              isSearch
+                ? "Oops! No notes found matching your search"
+                : `Start creating your first Note! Click the 'Add' button to jump thoughts, ideas, and reminders. Let's get Start`
+            }
           />
         )}
       </div>
