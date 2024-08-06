@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import Modal from "react-modal";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
+import Toast from "../components/Toast";
 
 const Home = () => {
   const [openAddEditModal, setOpenAddEditModal] = useState({
@@ -13,6 +14,28 @@ const Home = () => {
     type: "add",
     data: null,
   });
+
+  const [showToastMsg, setShowToastMsg] = useState({
+    isShow: false,
+    message: "",
+    type: "add",
+  });
+
+  const showToastMessage = (message, type) => {
+    setShowToastMsg({
+      isShow: true,
+      message: message,
+      type: type,
+    });
+  };
+
+  const handleCloseToast = () => {
+    setShowToastMsg((prev) => ({
+      ...prev,
+      isShow: false,
+    }));
+  };
+
   // user Info
   const [userInfo, setUserInfo] = useState([]);
   // all note
@@ -41,7 +64,6 @@ const Home = () => {
   };
 
   // Get All Notes API
-
   const getAllNotes = async () => {
     try {
       const response = await axiosInstance.get("/get-all-notes");
@@ -56,10 +78,7 @@ const Home = () => {
   useEffect(() => {
     getAllNotes();
     getUserInfo();
-    return () => {};
   }, []);
-
-  // Log userInfo.fullName whenever userInfo changes and is not null
 
   return (
     <>
@@ -68,7 +87,7 @@ const Home = () => {
       <div className="container mx-auto">
         <div className="grid grid-cols-3 gap-4 mt-8">
           {allNotes && allNotes.length > 0 ? (
-            allNotes.map((item, index) => (
+            allNotes.map((item) => (
               <NoteCard
                 key={item._id}
                 title={item.title}
@@ -99,7 +118,9 @@ const Home = () => {
 
       <Modal
         isOpen={openAddEditModal.isShown}
-        onRequestClose={() => {}}
+        onRequestClose={() => {
+          setOpenAddEditModal({ isShown: false, type: "add", data: null });
+        }}
         style={{
           overlay: {
             backgroundColor: "rgba(0,0,0,0.2)",
@@ -115,8 +136,15 @@ const Home = () => {
             setOpenAddEditModal({ isShown: false, type: "add", data: null });
           }}
           getAllNotes={getAllNotes}
+          showToastMessage={showToastMessage}
         />
       </Modal>
+      <Toast
+        isShow={showToastMsg.isShow}
+        message={showToastMsg.message}
+        type={showToastMsg.type}
+        onClose={handleCloseToast}
+      />
     </>
   );
 };
