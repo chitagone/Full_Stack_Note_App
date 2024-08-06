@@ -7,6 +7,8 @@ import Modal from "react-modal";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import Toast from "../components/Toast";
+import EmptyCard from "../components/EmptyCard";
+import add from "../assets/add.png";
 
 const Home = () => {
   const [openAddEditModal, setOpenAddEditModal] = useState({
@@ -75,6 +77,26 @@ const Home = () => {
     }
   };
 
+  // Delete Note
+  const deleteNotes = async (data) => {
+    const noteId = data._id;
+    try {
+      const response = await axiosInstance.delete("delete-note/" + noteId);
+      if (response.data && !response.data.error) {
+        showToastMessage("Note Delete Successfuly", "delete");
+        getAllNotes();
+      }
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        console.log("An unexpected error occured. Please try again.");
+      }
+    }
+  };
+
   useEffect(() => {
     getAllNotes();
     getUserInfo();
@@ -85,9 +107,9 @@ const Home = () => {
       <Navbar userInfo={userInfo} />
 
       <div className="container mx-auto">
-        <div className="grid grid-cols-3 gap-4 mt-8">
-          {allNotes && allNotes.length > 0 ? (
-            allNotes.map((item) => (
+        {allNotes && allNotes.length > 0 ? (
+          <div className="grid grid-cols-3 gap-4 mt-8">
+            {allNotes.map((item) => (
               <NoteCard
                 key={item._id}
                 title={item.title}
@@ -98,14 +120,19 @@ const Home = () => {
                 onEdit={() => {
                   handleEdit(item);
                 }}
-                onDelete={() => {}}
+                onDelete={() => {
+                  deleteNotes(item);
+                }}
                 onPinNote={() => []}
               />
-            ))
-          ) : (
-            <p>No notes available </p>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyCard
+            imgSrc={add}
+            message={`Start creating your first Note! Click the 'Add' button to jump thoughts, ideas, and reminders. Let's get Start`}
+          />
+        )}
       </div>
       <button
         className="w-16 h-16 flex items-center justify-center rounded-2xl bg-primary hover:bg-blue-600 absolute right-10 bottom-10"
