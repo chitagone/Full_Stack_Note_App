@@ -121,6 +121,27 @@ const Home = () => {
     setIsSearch(false);
     getAllNotes();
   };
+
+  // Pin API
+  const updateIsPinned = async (noteData) => {
+    const noteId = noteData._id;
+
+    try {
+      const response = await axiosInstance.put(
+        "/update-note-pinned/" + noteId,
+        {
+          isPinned: !noteData.isPinned,
+        }
+      );
+      if (response.data && response.data.note) {
+        showToastMessage("Note Updated Successfuly");
+        getAllNotes();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     getAllNotes();
     getUserInfo();
@@ -151,7 +172,7 @@ const Home = () => {
                 onDelete={() => {
                   deleteNotes(item);
                 }}
-                onPinNote={() => []}
+                onPinNote={() => updateIsPinned(item)}
               />
             ))}
           </div>
